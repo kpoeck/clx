@@ -555,6 +555,7 @@
 ;;
 ;; On AllegroCL the Display stream actually is a stream!
 ;;
+#+(or)
 (defun open-x-stream (host display protocol)
   (declare (ignore protocol)) ;; assume TCP
   (let ((stream (socket:make-socket :remote-host (string host)
@@ -563,6 +564,23 @@
     (if (streamp stream)
 	stream
       (error "Cannot connect to server: ~A:~D" host display))))
+      
+(defun open-x-stream (host display protocol)
+  (declare (ignore protocol)) ;; assume TCP
+  (let ((unix-domain-socket-path (unix-socket-path-from-host host display)))
+    (if unix-domain-socket-path
+        (let ((stream (socket:make-socket :type :stream
+                                          :remote-filename unix-domain-socket-path
+                                          :address-family :file)))
+          (if (streamp stream)
+              stream
+              (error "Cannot connect to server: ~A:~D" host display)))
+        (let ((stream (socket:make-socket :remote-host (string host)
+                                          :remote-port (+ *x-tcp-port* display))))
+          (if (streamp stream)
+              stream
+              (error "Cannot connect to server: ~A:~D" host display))))))
+
 
 
 ;;; BUFFER-READ-DEFAULT - read data from the X stream

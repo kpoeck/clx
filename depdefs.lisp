@@ -675,7 +675,7 @@ used, since NIL is the empty list.")
 nil if a network socket should be opened."
   (cond ((or (string= host "") (string= host "unix"))
 	 (format nil "~A~D" +X-unix-socket-path+ display))
-	#+darwin
+	#+(or darwin OS-MACOSX)
 	((or (and (> (length host) 10) (string= host "tmp/launch" :end1 10))
 	     (and (> (length host) 29) (string= host "private/tmp/com.apple.launchd" :end1 29)))
 	 (format nil "/~A:~D" host display))	  
